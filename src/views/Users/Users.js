@@ -1,69 +1,57 @@
 import React, { Component } from 'react';
-import { Badge, Card, CardBody, CardHeader, Col, Row, Table } from 'reactstrap';
+import { connect } from 'react-redux';
+import List from './List'
+import View from './View'
 
 import usersData from './UsersData'
 
-function UserRow(props) {
-  const user = props.user
-  const userLink = `#/users/${user.id}`
+import {
+  USERS_PAGE_LOADED,
+  USERS_PAGE_VIEW
+} from './Users.Action';
 
-  const getBadge = (status) => {
-    return status === 'Active' ? 'success' :
-      status === 'Inactive' ? 'secondary' :
-        status === 'Pending' ? 'warning' :
-          status === 'Banned' ? 'danger' :
-            'primary'
-  }
+const mapStateToProps = state => ({ 
+  ...state
+});
 
-  return (
-    <tr key={user.id.toString()}>
-        <th scope="row"><a href={userLink}>{user.id}</a></th>
-        <td><a href={userLink}>{user.name}</a></td>
-        <td>{user.registered}</td>
-        <td>{user.role}</td>
-        <td><Badge href={userLink} color={getBadge(user.status)}>{user.status}</Badge></td>
-    </tr>
-  )
-}
+const mapDispatchToProps = dispatch => ({
+  onLoad: () =>
+    dispatch({ type: USERS_PAGE_LOADED }),
+  onView: value =>
+    dispatch({ type: USERS_PAGE_VIEW, value })
+});
 
 class Users extends Component {
 
-  render() {
+  componentWillMount() {
+    this.props.onLoad();
+  }
 
-    const userList = usersData.filter((user) => user.id < 10)
+  render() {
+    if (this.props.Users.pageState === 'list') {
+
+      const userList = usersData.filter((user) => user.id < 10);
+
+      return (
+        <div className="animated fadeIn">
+          <List userList={userList} onView={this.props.onView}></List>
+        </div>
+      )
+    }
+    else if(this.props.Users.pageState === 'view'){
+      const user = usersData.find(user => user.id === this.props.Users.id)
+      return (
+        <div className="animated fadeIn">
+          <View user={user}></View>
+        </div>
+      )
+    }
 
     return (
       <div className="animated fadeIn">
-        <Row>
-          <Col xl={6}>
-            <Card>
-              <CardHeader>
-                <i className="fa fa-align-justify"></i> Users <small className="text-muted">example</small>
-              </CardHeader>
-              <CardBody>
-                <Table responsive hover>
-                  <thead>
-                    <tr>
-                      <th scope="col">id</th>
-                      <th scope="col">name</th>
-                      <th scope="col">registered</th>
-                      <th scope="col">role</th>
-                      <th scope="col">status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {userList.map((user, index) =>
-                      <UserRow key={index} user={user}/>
-                    )}
-                  </tbody>
-                </Table>
-              </CardBody>
-            </Card>
-          </Col>
-        </Row>
       </div>
     )
   }
 }
 
-export default Users;
+export default connect(mapStateToProps, mapDispatchToProps)(Users);

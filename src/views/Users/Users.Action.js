@@ -1,0 +1,2 @@
+export const USERS_PAGE_LOADED = 'USERS_PAGE_LOADED'
+export const USERS_PAGE_VIEW = 'USERS_PAGE_VIEW'

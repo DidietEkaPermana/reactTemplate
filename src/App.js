@@ -62,7 +62,6 @@ class App extends React.Component {
   render() {
     console.log(JSON.stringify(this.props));
     if (this.props.currentUser) {
-      console.log("1");
       return (
           <Switch>
             <Route exact path="/404" name="Page 404" component={Page404} />
@@ -72,7 +71,6 @@ class App extends React.Component {
       );
     }
 
-    console.log("2");
     return (
           <Switch>
             <Route exact path="/" name="Login Page" component={Login} />
