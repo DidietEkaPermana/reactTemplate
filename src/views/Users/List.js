@@ -29,39 +29,40 @@ function UserRow(props) {
     )
 }
 
-function List(props) {
-    console.log('render list');
-    const userList = props.userList;
+class List extends React.Component {
+    render() {
+        const userList = this.props.userList;
 
-    return (
-        <Row>
-            <Col xl={6}>
-                <Card>
-                    <CardHeader>
-                        <i className="fa fa-align-justify"></i> Users <small className="text-muted">example</small>
-                    </CardHeader>
-                    <CardBody>
-                        <Table responsive hover>
-                            <thead>
-                                <tr>
-                                    <th scope="col">id</th>
-                                    <th scope="col">name</th>
-                                    <th scope="col">registered</th>
-                                    <th scope="col">role</th>
-                                    <th scope="col">status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {userList.map((user, index) =>
-                                    <UserRow key={index} user={user} onView={props.onView} />
-                                )}
-                            </tbody>
-                        </Table>
-                    </CardBody>
-                </Card>
-            </Col>
-        </Row>
-    )
+        return (
+            <Row>
+                <Col xl={6}>
+                    <Card>
+                        <CardHeader>
+                            <i className="fa fa-align-justify"></i> Users <small className="text-muted">example</small>
+                        </CardHeader>
+                        <CardBody>
+                            <Table responsive hover>
+                                <thead>
+                                    <tr>
+                                        <th scope="col">id</th>
+                                        <th scope="col">name</th>
+                                        <th scope="col">registered</th>
+                                        <th scope="col">role</th>
+                                        <th scope="col">status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {userList.map((user, index) =>
+                                        <UserRow key={index} user={user} onView={this.props.onView} />
+                                    )}
+                                </tbody>
+                            </Table>
+                        </CardBody>
+                    </Card>
+                </Col>
+            </Row>
+        )
+    }
 }
 
 export default List;
