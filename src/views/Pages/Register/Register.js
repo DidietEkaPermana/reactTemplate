@@ -1,77 +1,52 @@
-import React from 'react';
-import { Button, Card, CardBody, CardFooter, Col, Container, Form, Input, InputGroup, InputGroupAddon, InputGroupText, Row, FormFeedback } from 'reactstrap';
+import React, { Component } from 'react';
+import { Button, Card, CardBody, CardFooter, Col, Container, Form, Input, InputGroup, InputGroupAddon, InputGroupText, Row } from 'reactstrap';
 import { connect } from 'react-redux';
-import agent from '../../../agent';
-import {
-  UPDATE_FIELD_AUTH,
-  REGISTER,
-  REGISTER_PAGE_LOADED,
-  REGISTER_PAGE_UNLOADED
-} from '../../../constants/actionTypes';
-import ListErrors from '../../ListErrors'
 
-const mapStateToProps = state => ({ ...state.auth });
+import { userActions } from '../../../_actions';
 
-const mapDispatchToProps = dispatch => ({
-  onChangeEmail: value =>
-    dispatch({ type: UPDATE_FIELD_AUTH, key: 'email', value }),
-  onChangePassword: value =>
-    dispatch({ type: UPDATE_FIELD_AUTH, key: 'password', value }),
-  onChangeUsername: value =>
-    dispatch({ type: UPDATE_FIELD_AUTH, key: 'username', value }),
-  onChangeRepeatpassword: value =>
-    dispatch({ type: UPDATE_FIELD_AUTH, key: 'repeatpassword', value }),
-  onChangePasswordState: value =>
-    dispatch({ type: UPDATE_FIELD_AUTH, key: 'isPasswordSame', value }),
-  onSubmit: (username, email, password) => {
-    const payload = agent.Auth.register(username, email, password);
-    dispatch({ type: REGISTER, payload })
-  },
-  onLoad: () =>
-    dispatch({ type: REGISTER_PAGE_LOADED }),
-  onUnload: () =>
-    dispatch({ type: REGISTER_PAGE_UNLOADED })
-});
+class Register extends Component {
+  constructor(props) {
+    super(props);
 
-class Register extends React.Component {
-  constructor() {
-    super();
-    this.changeEmail = ev => this.props.onChangeEmail(ev.target.value);
-    this.changePassword = ev => this.props.onChangePassword(ev.target.value);
-    this.changeUsername = ev => this.props.onChangeUsername(ev.target.value);
-    this.changeRepeatpassword = ev => {
-      if(this.props.password) {
-        let temp = this.props.password.substring(0, ev.target.value.length);
-        if(temp !== ev.target.value)
-          this.props.onChangePasswordState(false);
-        else
-          this.props.onChangePasswordState(true);
-      }
-      this.props.onChangeRepeatpassword(ev.target.value);
+    this.state = {
+      user: {
+        firstName: '',
+        lastName: '',
+        username: '',
+        password: ''
+      },
+      submitted: false
     };
-    this.submitForm = (username, email, password) => ev => {
-      ev.preventDefault();
-      if(!this.props.isPasswordSame){
-        alert('Your input password not the same');
-        return;
+
+    this.handleChange = this.handleChange.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+  }
+
+  handleChange(event) {
+    const { name, value } = event.target;
+    const { user } = this.state;
+    this.setState({
+      user: {
+        ...user,
+        [name]: value
       }
-      this.props.onSubmit(username, email, password);
+    });
+  }
+
+  handleSubmit(event) {
+    event.preventDefault();
+
+    this.setState({ submitted: true });
+    const { user } = this.state;
+    const { dispatch } = this.props;
+    if (user.firstName && user.lastName && user.username && user.password) {
+      dispatch(userActions.register(user));
     }
   }
 
-  componentWillMount() {
-    this.props.onLoad();
-  }
-
-  componentWillUnmount() {
-    this.props.onUnload();
-  }
-
   render() {
-    const email = this.props.email;
-    const password = this.props.password;
-    const username = this.props.username;
-
+    const { registering } = this.props;
+    const { user, submitted } = this.state;
     return (
       <div className="app flex-row align-items-center">
         <Container>
@@ -79,47 +54,58 @@ class Register extends React.Component {
             <Col md="6">
               <Card className="mx-4">
                 <CardBody className="p-4">
-                  <ListErrors errors={this.props.errors} />
-                  <Form onSubmit={this.submitForm(username, email, password)}>
+                  <Form name="form" onSubmit={this.handleSubmit}>
                     <h1>Register</h1>
                     <p className="text-muted">Create your account</p>
-                    <InputGroup className="mb-3">
+                    <InputGroup className={'mb-3' + (submitted && !user.firstName ? ' has-error' : '')}>
                       <InputGroupAddon addonType="prepend">
                         <InputGroupText>
                           <i className="icon-user"></i>
                         </InputGroupText>
                       </InputGroupAddon>
-                      <Input type="text" invalid={!this.props.username} placeholder="Username" autoComplete="username" value={this.props.username}
-                        onChange={this.changeUsername} required/>
-                      <FormFeedback className="help-block">Please provide a valid information</FormFeedback>
+                      <Input type="text" placeholder="Firstname" autoComplete="firstName" name="firstName" value={user.firstName} onChange={this.handleChange} />
+                      {submitted && !user.firstName &&
+                        <div className="help-block">First Name is required</div>
+                      }
                     </InputGroup>
-                    <InputGroup className="mb-3">
+                    <InputGroup className={'mb-3' + (submitted && !user.lastName ? ' has-error' : '')}>
                       <InputGroupAddon addonType="prepend">
-                        <InputGroupText>@</InputGroupText>
+                        <InputGroupText>
+                          <i className="icon-user"></i>
+                        </InputGroupText>
                       </InputGroupAddon>
-                      <Input type="email" placeholder="Email" autoComplete="email" value={this.props.email}
-                        onChange={this.changeEmail} />
+                      <Input type="text" placeholder="Lastname" autoComplete="lastName" name="lastName" value={user.lastName} onChange={this.handleChange} />
+                      {submitted && !user.lastName &&
+                        <div className="help-block">Last Name is required</div>
+                      }
                     </InputGroup>
-                    <InputGroup className="mb-3">
+                    <InputGroup className={'mb-3' + (submitted && !user.username ? ' has-error' : '')}>
+                      <InputGroupAddon addonType="prepend">
+                        <InputGroupText>
+                          <i className="icon-user"></i>
+                        </InputGroupText>
+                      </InputGroupAddon>
+                      <Input type="text" placeholder="Username" autoComplete="username" name="username" value={user.username} onChange={this.handleChange} />
+                      {submitted && !user.username &&
+                        <div className="help-block">Username is required</div>
+                      }
+                    </InputGroup>
+                    <InputGroup className={'mb-3' + (submitted && !user.password ? ' has-error' : '')}>
                       <InputGroupAddon addonType="prepend">
                         <InputGroupText>
                           <i className="icon-lock"></i>
                         </InputGroupText>
                       </InputGroupAddon>
-                      <Input type="password" placeholder="Password" autoComplete="new-password" value={this.props.password}
-                        onChange={this.changePassword} required/>
+                      <Input type="password" placeholder="Password" autoComplete="password" name="password" value={user.password} onChange={this.handleChange} />
+                      {submitted && !user.password &&
+                        <div className="help-block">Password is required</div>
+                      }
                     </InputGroup>
-                    <InputGroup className="mb-4">
-                      <InputGroupAddon addonType="prepend">
-                        <InputGroupText>
-                          <i className="icon-lock"></i>
-                        </InputGroupText>
-                      </InputGroupAddon>
-                      <Input type="password" invalid={!this.props.isPasswordSame} placeholder="Repeat password" autoComplete="new-password"  value={this.props.repeatpassword}
-                        onChange={this.changeRepeatpassword}/>
-                      <FormFeedback className="help-block">Your repeat password not the same with your input password</FormFeedback>
-                    </InputGroup>
-                    <Button disabled={this.props.inProgress} color="success" block>Create Account</Button>
+                    <Button color="success" block>Create Account
+                    {registering &&
+                        <img src="data:image/gif;base64,R0lGODlhEAAQAPIAAP///wAAAMLCwkJCQgAAAGJiYoKCgpKSkiH/C05FVFNDQVBFMi4wAwEAAAAh/hpDcmVhdGVkIHdpdGggYWpheGxvYWQuaW5mbwAh+QQJCgAAACwAAAAAEAAQAAADMwi63P4wyklrE2MIOggZnAdOmGYJRbExwroUmcG2LmDEwnHQLVsYOd2mBzkYDAdKa+dIAAAh+QQJCgAAACwAAAAAEAAQAAADNAi63P5OjCEgG4QMu7DmikRxQlFUYDEZIGBMRVsaqHwctXXf7WEYB4Ag1xjihkMZsiUkKhIAIfkECQoAAAAsAAAAABAAEAAAAzYIujIjK8pByJDMlFYvBoVjHA70GU7xSUJhmKtwHPAKzLO9HMaoKwJZ7Rf8AYPDDzKpZBqfvwQAIfkECQoAAAAsAAAAABAAEAAAAzMIumIlK8oyhpHsnFZfhYumCYUhDAQxRIdhHBGqRoKw0R8DYlJd8z0fMDgsGo/IpHI5TAAAIfkECQoAAAAsAAAAABAAEAAAAzIIunInK0rnZBTwGPNMgQwmdsNgXGJUlIWEuR5oWUIpz8pAEAMe6TwfwyYsGo/IpFKSAAAh+QQJCgAAACwAAAAAEAAQAAADMwi6IMKQORfjdOe82p4wGccc4CEuQradylesojEMBgsUc2G7sDX3lQGBMLAJibufbSlKAAAh+QQJCgAAACwAAAAAEAAQAAADMgi63P7wCRHZnFVdmgHu2nFwlWCI3WGc3TSWhUFGxTAUkGCbtgENBMJAEJsxgMLWzpEAACH5BAkKAAAALAAAAAAQABAAAAMyCLrc/jDKSatlQtScKdceCAjDII7HcQ4EMTCpyrCuUBjCYRgHVtqlAiB1YhiCnlsRkAAAOwAAAAAAAAAAAA==" alt="..." />
+                    }
+                    </Button>
                   </Form>
                 </CardBody>
                 <CardFooter className="p-4">
@@ -141,4 +127,11 @@ class Register extends React.Component {
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(Register);
+function mapStateToProps(state) {
+  const { registering } = state.registration;
+  return {
+    registering
+  };
+}
+
+export default connect(mapStateToProps)(Register);

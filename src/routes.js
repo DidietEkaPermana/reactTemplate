@@ -182,7 +182,20 @@ const User = Loadable({
   loading: Loading,
 });
 
+// const List = Loadable({
+//   loader: () => import('./crud/List'),
+//   loading: Loading,
+// });
 
+const Crud = Loadable({
+  loader: () => import('./crud/Crud'),
+  loading: Loading,
+});
+
+const ReactBootstrapTable = Loadable({
+  loader: () => import('./reactBootstrapTable/sample'),
+  loading: Loading,
+})
 
 // https://github.com/ReactTraining/react-router/tree/master/packages/react-router-config
 const routes = [
@@ -227,6 +240,9 @@ const routes = [
   { path: '/charts', name: 'Charts', component: Charts },
   { path: '/users', exact: true,  name: 'Users', component: Users },
   { path: '/users/:id', exact: true, name: 'User Details', component: User },
+  // { path: '/list', exact: true, name: 'List', component: List },
+  { path: '/crud', exact: true,  name: 'Crud', component: Crud },
+  { path: '/reactTable', exact: true,  name: 'Bootstrap Table', component: ReactBootstrapTable },
 ];
 
 export default routes;

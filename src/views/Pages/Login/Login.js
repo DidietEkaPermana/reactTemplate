@@ -1,46 +1,49 @@
-import React from 'react';
+import React, { Component } from 'react';
 import { Button, Card, CardBody, CardGroup, Col, Container, Form, Input, InputGroup, InputGroupAddon, InputGroupText, Row } from 'reactstrap';
-import agent from '../../../agent';
-import { connect } from 'react-redux';
-import {
-  UPDATE_FIELD_AUTH,
-  LOGIN,
-  LOGIN_PAGE_UNLOADED
-} from '../../../constants/actionTypes';
 import { Link } from 'react-router-dom';
-import ListErrors from '../../ListErrors'
+import { connect } from 'react-redux';
 
-const mapStateToProps = state => ({ ...state.auth });
+import { userActions } from '../../../_actions';
 
-const mapDispatchToProps = dispatch => ({
-  onChangeEmail: value =>
-    dispatch({ type: UPDATE_FIELD_AUTH, key: 'email', value }),
-  onChangePassword: value =>
-    dispatch({ type: UPDATE_FIELD_AUTH, key: 'password', value }),
-  onSubmit: (email, password) =>
-    dispatch({ type: LOGIN, payload: agent.Auth.login(email, password) }),
-  onUnload: () =>
-    dispatch({ type: LOGIN_PAGE_UNLOADED })
-});
+class Login extends Component {
 
-class Login extends React.Component {
-  constructor() {
-    super();
-    this.changeEmail = ev => this.props.onChangeEmail(ev.target.value);
-    this.changePassword = ev => this.props.onChangePassword(ev.target.value);
-    this.submitForm = (email, password) => ev => {
-      ev.preventDefault();
-      this.props.onSubmit(email, password);
+  constructor(props) {
+    super(props);
+
+    // reset login status
+    this.props.dispatch(userActions.logout());
+
+    this.state = {
+      username: '',
+      password: '',
+      submitted: false
     };
+
+    this.handleChange = this.handleChange.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
   }
 
-  componentWillUnmount() {
-    this.props.onUnload();
+  handleChange(e) {
+    const { name, value } = e.target;
+    this.setState({ [name]: value });
+  }
+
+  handleSubmit(e) {
+    e.preventDefault();
+
+    console.log("submit login");
+
+    this.setState({ submitted: true });
+    const { username, password } = this.state;
+    const { dispatch } = this.props;
+    if (username && password) {
+      dispatch(userActions.login(username, password));
+    }
   }
 
   render() {
-    const email = this.props.email;
-    const password = this.props.password;
+    const { loggingIn } = this.props;
+    const { username, password, submitted } = this.state;
     return (
       <div className="app flex-row align-items-center">
         <Container>
@@ -49,48 +52,44 @@ class Login extends React.Component {
               <CardGroup>
                 <Card className="p-4">
                   <CardBody>
-                    <ListErrors errors={this.props.errors} />
-                    <Form onSubmit={this.submitForm(email, password)}>
+                    <Form name="form" onSubmit={this.handleSubmit}>
                       <h1>Login</h1>
                       <p className="text-muted">Sign In to your account</p>
-                      <InputGroup className="mb-3">
+                      <InputGroup className={'mb-3' + (submitted && !username ? ' has-error' : '')}>
                         <InputGroupAddon addonType="prepend">
                           <InputGroupText>
                             <i className="icon-user"></i>
                           </InputGroupText>
                         </InputGroupAddon>
-                        <Input type="text" placeholder="Username" autoComplete="username" 
-                          value={email}
-                          onChange={this.changeEmail}/>
+                        <Input type="text" placeholder="Username" autoComplete="username" name="username" value={username} onChange={this.handleChange} />
+                        {submitted && !username &&
+                          <div className="help-block">Username is required</div>
+                        }
                       </InputGroup>
-                      <InputGroup className="mb-4">
+                      <InputGroup className={'mb-4' + (submitted && !password ? ' has-error' : '')}>
                         <InputGroupAddon addonType="prepend">
                           <InputGroupText>
                             <i className="icon-lock"></i>
                           </InputGroupText>
                         </InputGroupAddon>
-                        <Input type="password" placeholder="Password" autoComplete="current-password" value={password}
-                          onChange={this.changePassword} />
+                        <Input type="password" placeholder="Password" name="password" autoComplete="current-password" value={password} onChange={this.handleChange} />
+                        {submitted && !password &&
+                          <div className="help-block">Password is required</div>
+                        }
                       </InputGroup>
                       <Row>
                         <Col xs="6">
-                          <Button disabled={this.props.inProgress} color="primary" className="px-4">Login</Button>
+                          <Button color="primary" className="px-4">Login
+                          {loggingIn &&
+                            <img src="data:image/gif;base64,R0lGODlhEAAQAPIAAP///wAAAMLCwkJCQgAAAGJiYoKCgpKSkiH/C05FVFNDQVBFMi4wAwEAAAAh/hpDcmVhdGVkIHdpdGggYWpheGxvYWQuaW5mbwAh+QQJCgAAACwAAAAAEAAQAAADMwi63P4wyklrE2MIOggZnAdOmGYJRbExwroUmcG2LmDEwnHQLVsYOd2mBzkYDAdKa+dIAAAh+QQJCgAAACwAAAAAEAAQAAADNAi63P5OjCEgG4QMu7DmikRxQlFUYDEZIGBMRVsaqHwctXXf7WEYB4Ag1xjihkMZsiUkKhIAIfkECQoAAAAsAAAAABAAEAAAAzYIujIjK8pByJDMlFYvBoVjHA70GU7xSUJhmKtwHPAKzLO9HMaoKwJZ7Rf8AYPDDzKpZBqfvwQAIfkECQoAAAAsAAAAABAAEAAAAzMIumIlK8oyhpHsnFZfhYumCYUhDAQxRIdhHBGqRoKw0R8DYlJd8z0fMDgsGo/IpHI5TAAAIfkECQoAAAAsAAAAABAAEAAAAzIIunInK0rnZBTwGPNMgQwmdsNgXGJUlIWEuR5oWUIpz8pAEAMe6TwfwyYsGo/IpFKSAAAh+QQJCgAAACwAAAAAEAAQAAADMwi6IMKQORfjdOe82p4wGccc4CEuQradylesojEMBgsUc2G7sDX3lQGBMLAJibufbSlKAAAh+QQJCgAAACwAAAAAEAAQAAADMgi63P7wCRHZnFVdmgHu2nFwlWCI3WGc3TSWhUFGxTAUkGCbtgENBMJAEJsxgMLWzpEAACH5BAkKAAAALAAAAAAQABAAAAMyCLrc/jDKSatlQtScKdceCAjDII7HcQ4EMTCpyrCuUBjCYRgHVtqlAiB1YhiCnlsRkAAAOwAAAAAAAAAAAA==" alt="..." />
+                          }
+                          </Button>
                         </Col>
-                        {/* <Col xs="6" className="text-right">
-                          <Button disabled={this.props.inProgress} color="link" className="px-0">Forgot password?</Button>
-                        </Col> */}
+                        <Col xs="6" className="text-right">
+                          <Link to="/register" className="btn btn-link">Register</Link>
+                        </Col>
                       </Row>
                     </Form>
-                  </CardBody>
-                </Card>
-                <Card className="text-white bg-primary py-5 d-md-down-none" style={{ width: 44 + '%' }}>
-                  <CardBody className="text-center">
-                    <div>
-                      <h2>Sign up</h2>
-                      <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut
-                        labore et dolore magna aliqua.</p>
-                       <Link to="/register" className="btn btn-primary mt-3">Register Now!</Link>
-                    </div>
                   </CardBody>
                 </Card>
               </CardGroup>
@@ -102,4 +101,15 @@ class Login extends React.Component {
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(Login);
+function mapStateToProps(state) {
+  const { loggingIn } = state.authentication;
+  return {
+      loggingIn
+  };
+}
+
+// const connectedLoginPage = connect(mapStateToProps)(Login);
+// export { connectedLoginPage as Login }; 
+// export default Login;
+
+export default connect(mapStateToProps)(Login);

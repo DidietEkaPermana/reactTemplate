@@ -1,5 +1,11 @@
 import React from 'react';
-import { Route, Switch } from 'react-router-dom';
+import { Router, Route } from 'react-router-dom';
+import { connect } from 'react-redux';
+
+import { history } from './_helpers';
+import { alertActions } from './_actions';
+// import { PrivateRoute } from './_components';
+
 import './App.css';
 // Styles
 // CoreUI Icons Set
@@ -20,67 +26,65 @@ import { Login, Page404, Page500, Register } from './views/Pages';
 
 // import { renderRoutes } from 'react-router-config';
 
-import { APP_LOAD, REDIRECT } from './constants/actionTypes';
-import { store } from './store'
-import { push } from 'react-router-redux';
-import agent from './agent';
-import { connect } from 'react-redux';
-
-const mapStateToProps = state => {
-  return {
-    appLoaded: state.common.appLoaded,
-    appName: state.common.appName,
-    currentUser: state.common.currentUser,
-    redirectTo: state.common.redirectTo
-  }};
-
-const mapDispatchToProps = dispatch => ({
-  onLoad: (payload, token) =>
-    dispatch({ type: APP_LOAD, payload, token, skipTracking: true }),
-  onRedirect: () =>
-    dispatch({ type: REDIRECT })
-});
-
 class App extends React.Component {
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.redirectTo) {
-      // this.context.router.replace(nextProps.redirectTo);
-      store.dispatch(push(nextProps.redirectTo));
-      this.props.onRedirect();
-    }
-  }
+  constructor(props) {
+    super(props);
 
-  componentWillMount() {
-    const token = window.localStorage.getItem('jwt');
-    if (token) {
-      agent.setToken(token);
-    }
-
-    this.props.onLoad(token ? agent.Auth.current() : null, token);
+    const { dispatch } = this.props;
+    history.listen((location, action) => {
+      // clear alert on location change
+      dispatch(alertActions.clear());
+    });
   }
 
   render() {
-    console.log(JSON.stringify(this.props));
-    if (this.props.currentUser) {
+    const { alert } = this.props;
+
+    if (localStorage.getItem('user')) {
       return (
-          <Switch>
-            <Route exact path="/404" name="Page 404" component={Page404} />
-            <Route exact path="/500" name="Page 500" component={Page500} />
-            <Route path="/" name="Home" component={DefaultLayout} />
-          </Switch>
+        <div>
+          {
+            alert.message &&
+            <div className={`alert ${alert.type}`}>{alert.message}</div>
+          }
+          <Router history={history}>
+            <div>
+              <Route path="/" name="Home" component={DefaultLayout} />
+              <Route exact path="/login" name="Login Page" component={Login} />
+              <Route exact path="/404" name="Page 404" component={Page404} />
+              <Route exact path="/500" name="Page 500" component={Page500} />
+            </div>
+          </Router >
+        </div>
       );
     }
-
-    return (
-          <Switch>
-            <Route exact path="/" name="Login Page" component={Login} />
-            <Route exact path="/register" name="Register Page" component={Register} />
-            <Route exact path="/404" name="Page 404" component={Page404} />
-            <Route exact path="/500" name="Page 500" component={Page500} />
-          </Switch>
-    );
+    else {
+      return (
+        <div>
+          {
+            alert.message &&
+            <div className={`alert ${alert.type}`}>{alert.message}</div>
+          }
+          <Router history={history}>
+            <div>
+              <Route exact path="/" name="Login Page" component={Login} />
+              <Route exact path="/login" name="Login Page" component={Login} />
+              <Route exact path="/register" name="Register Page" component={Register} />
+              <Route exact path="/404" name="Page 404" component={Page404} />
+              <Route exact path="/500" name="Page 500" component={Page500} />
+            </div>
+          </Router >
+        </div>
+      );
+    }
   }
 }
 
-// export default App;
-export default connect(mapStateToProps, mapDispatchToProps)(App);
+function mapStateToProps(state) {
+  const { alert } = state;
+  return {
+    alert
+  };
+}
+
+export default connect(mapStateToProps)(App);

@@ -222,6 +222,15 @@ export default {
       },
     },
     {
+      name: 'CRUD',
+      url: '/Crud',
+      icon: 'icon-calculator',
+      badge: {
+        variant: 'info',
+        text: 'NEW',
+      },
+    },
+    {
       divider: true,
     },
     {

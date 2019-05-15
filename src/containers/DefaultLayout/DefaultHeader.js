@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
 import { Badge, DropdownItem, DropdownMenu, DropdownToggle, Nav, NavItem, NavLink } from 'reactstrap';
 import PropTypes from 'prop-types';
 
@@ -6,22 +7,11 @@ import { AppAsideToggler, AppHeaderDropdown, AppNavbarBrand, AppSidebarToggler }
 import logo from '../../assets/img/brand/logo.svg'
 import sygnet from '../../assets/img/brand/sygnet.svg'
 
-import { connect } from 'react-redux';
-import {
-  LOGOUT
-} from '../../constants/actionTypes';
-
 const propTypes = {
   children: PropTypes.node,
 };
 
 const defaultProps = {};
-
-const mapStateToProps = state => ({});
-
-const mapDispatchToProps = dispatch => ({
-  onClickLogout: () => dispatch({ type: LOGOUT })
-});
 
 class DefaultHeader extends Component {
   render() {
@@ -40,13 +30,16 @@ class DefaultHeader extends Component {
 
         <Nav className="d-md-down-none" navbar>
           <NavItem className="px-3">
-            <NavLink href="/">Dashboard</NavLink>
+            <Link className="nav-link" to="/">Dashboard</Link>
+            {/* <NavLink href="/">Dashboard</NavLink> */}
           </NavItem>
           <NavItem className="px-3">
-            <NavLink href="/users">Users</NavLink>
+            <Link className="nav-link" to="/users">Users</Link>
+            {/* <NavLink href="/users">Users</NavLink> */}
           </NavItem>
           <NavItem className="px-3">
-            <NavLink href="#">Settings</NavLink>
+            <Link className="nav-link" to="/reactTable">Table</Link>
+            {/* <NavLink href="#">Settings</NavLink> */}
           </NavItem>
         </Nav>
         <Nav className="ml-auto" navbar>
@@ -76,7 +69,9 @@ class DefaultHeader extends Component {
               <DropdownItem><i className="fa fa-file"></i> Projects<Badge color="primary">42</Badge></DropdownItem>
               <DropdownItem divider />
               <DropdownItem><i className="fa fa-shield"></i> Lock Account</DropdownItem>
-              <DropdownItem onClick={this.props.onClickLogout}><i className="fa fa-lock"></i> Logout</DropdownItem>
+              <DropdownItem>
+                <Link to="/login"><i className="fa fa-lock"></i> Logout</Link>
+              </DropdownItem>
             </DropdownMenu>
           </AppHeaderDropdown>
         </Nav>
@@ -90,5 +85,4 @@ class DefaultHeader extends Component {
 DefaultHeader.propTypes = propTypes;
 DefaultHeader.defaultProps = defaultProps;
 
-// export default DefaultHeader;
-export default connect(mapStateToProps, mapDispatchToProps)(DefaultHeader);
+export default DefaultHeader;
