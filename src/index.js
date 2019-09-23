@@ -1,14 +1,9 @@
 import './polyfill'
 import React from 'react';
-// import ReactDOM from 'react-dom';
-import { render } from 'react-dom';
-// import { render } from 'react-dom';
-import { Provider } from 'react-redux';
-
-import { store } from './_helpers';
-
+import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
+
 // disable ServiceWorker
 // import registerServiceWorker from './registerServiceWorker';
 
@@ -16,12 +11,22 @@ import App from './App';
 // disable ServiceWorker
 // registerServiceWorker();
 
+import { Provider } from 'react-redux';
+import { store, history } from './_helpers';
+import { Route, Switch } from 'react-router-dom';
+import { ConnectedRouter } from 'react-router-redux';
+
+
 // setup fake backend
 import { configureFakeBackend } from './_helpers';
 configureFakeBackend();
 
-render(
+ReactDOM.render(
     <Provider store={store}>
-        <App />
+        <ConnectedRouter history={history}>
+        <Switch>
+          <Route path="/" component={App} />
+        </Switch>
+      </ConnectedRouter>
     </Provider>
 , document.getElementById('root'));
